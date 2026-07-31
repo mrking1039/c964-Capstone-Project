@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kick Daily Gifted Sub Counter</title>
+<style>
+  :root {
+    --accent: #53fc18;        /* Kick green */
+    --text: #ffffff;
+    --shadow: rgba(0,0,0,0.85);
+    --num-size: 88px;
+    --label-size: 22px;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: transparent;           /* OBS browser source stays transparent */
+    overflow: hidden;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #widget {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+    user-select: none;
+  }
+
+  #label {
+    color: var(--text);
+    font-size: var(--label-size);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow:
+      -2px -2px 0 var(--shadow),  2px -2px 0 var(--shadow),
+      -2px  2px 0 var(--shadow),  2px  2px 0 var(--shadow),
+       0    2px 4px var(--shadow);
+  }
+
+  #count {
+    color: var(--accent);
+    font-size: var(--num-size);
+    font-weight: 900;
+    line-height: 1;
+    text-shadow:
+      -3px -3px 0 var(--shadow),  3px -3px 0 var(--shadow),
+      -3px  3px 0 var(--shadow),  3px  3px 0 var(--shadow),
+       0    4px 8px var(--shadow);
+    transition: transform 0.18s ease;
+  }
+
+  #count.bump { transform: scale(1.25); }
+
+  /* Small status pill — only shown when NOT connected/counting, so a healthy
+     widget is completely clean for the overlay. */
+  #status {
+    position: fixed;
+    left: 8px;
+    bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd54a;
+    max-width: 90vw;
+    display: none;
+  }
+  #status.show { display: block; }
+  #status.ok   { color: #53fc18; }
+  #status.err  { color: #ff5a5a; }
+</style>
+</head>
+<body>
+  <div id="widget">
+    <div id="label">Gifted Subs Today</div>
+    <div id="count">0</div>
+  </div>
+  <div id="status"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ----------------------------------------------------------------------
+  // Configuration (all overridable via URL query parameters)
+  // ----------------------------------------------------------------------
+  var params = new URLSearchParams(window.location.search);
+
+  var CONFIG = {
+    channel:     (params.get("channel") || "boyking").trim().toLowerCase(),
+    chatroomId:  (params.get("chatroom_id") || "").trim(),  // optional manual override
+    label:       params.get("label") != null ? params.get("label") : "Gifted Subs Today",
+    reset:       (params.get("reset") || "daily").toLowerCase(),  // daily | session | never
+    accent:      params.get("color") || params.get("accent") || "#53fc18",
+    numSize:     params.get("size") || "88px",
+    labelSize:   params.get("labelsize") || "22px",
+    demo:        params.get("demo") === "1"
+  };
+
+  // Kick's public Pusher application (unofficial, used by the site itself).
+  var PUSHER_KEY     = "32cbd69e4b950bf97679";
+  var PUSHER_CLUSTER = "us2";
+  var PUSHER_URL     = "wss://ws-" + PUSHER_CLUSTER + ".pusher.com/app/" + PUSHER_KEY +
+                       "?protocol=7&client=js&version=8.4.0-rc2&flash=false";
+  var GIFT_EVENT     = "App\\Events\\GiftedSubscriptionsEvent";
+
+  // ----------------------------------------------------------------------
+  // DOM + styling
+  // ----------------------------------------------------------------------
+  var elCount  = document.getElementById("count");
+  var elLabel  = document.getElementById("label");
+  var elStatus = document.getElementById("status");
+
+  document.documentElement.style.setProperty("--accent", CONFIG.accent);
+  document.documentElement.style.setProperty("--num-size", CONFIG.numSize);
+  document.documentElement.style.setProperty("--label-size", CONFIG.labelSize);
+  elLabel.textContent = CONFIG.label;
+  if (CONFIG.label === "") elLabel.style.display = "none";
+
+  function setStatus(msg, cls) {
+    if (!msg) { elStatus.className = ""; elStatus.textContent = ""; return; }
+    elStatus.textContent = msg;
+    elStatus.className = "show" + (cls ? " " + cls : "");
+  }
+
+  // ----------------------------------------------------------------------
+  // Count storage with daily reset
+  // ----------------------------------------------------------------------
+  var STORAGE_KEY = "kick-gifted-" + CONFIG.reset + "-" + CONFIG.channel;
+  var count = 0;
+
+  function todayStamp() {
+    // Local calendar date, e.g. "2026-07-31"
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+
+  function loadCount() {
+    if (CONFIG.reset === "session") { count = 0; return; }   // fresh every load
+    try {
+      var raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (!raw) { count = 0; return; }
+      if (CONFIG.reset === "daily" && raw.date !== todayStamp()) {
+        count = 0;               // new day -> reset
+      } else {
+        count = raw.count || 0;
+      }
+    } catch (e) { count = 0; }
+  }
+
+  function saveCount() {
+    if (CONFIG.reset === "session") return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: todayStamp(), count: count }));
+    } catch (e) { /* private mode etc. — ignore */ }
+  }
+
+  function render(bump) {
+    elCount.textContent = count.toLocaleString();
+    if (bump) {
+      elCount.classList.remove("bump");
+      void elCount.offsetWidth;     // restart animation
+      elCount.classList.add("bump");
+    }
+  }
+
+  function addGifts(n) {
+    if (!n || n < 1) return;
+    count += n;
+    saveCount();
+    render(true);
+  }
+
+  // If the widget is left running past midnight, roll the day over.
+  function checkDayRollover() {
+    if (CONFIG.reset !== "daily") return;
+    try {
+      var raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      var storedDate = raw && raw.date;
+      if (storedDate && storedDate !== todayStamp()) {
+        count = 0;
+        saveCount();
+        render(false);
+      }
+    } catch (e) {}
+  }
+  setInterval(checkDayRollover, 30 * 1000);
+
+  loadCount();
+  render(false);
+
+  // ----------------------------------------------------------------------
+  // De-duplicate events (Kick may echo an event on more than one channel)
+  // ----------------------------------------------------------------------
+  var recent = [];  // { sig, t }
+  function isDuplicate(sig) {
+    var now = Date.now();
+    recent = recent.filter(function (r) { return now - r.t < 6000; });
+    for (var i = 0; i < recent.length; i++) {
+      if (recent[i].sig === sig) return true;
+    }
+    recent.push({ sig: sig, t: now });
+    return false;
+  }
+
+  function handleGiftPayload(data) {
+    // `data` may be a JSON string or an already-parsed object.
+    var d = data;
+    if (typeof d === "string") {
+      try { d = JSON.parse(d); } catch (e) { return; }
+    }
+    if (!d) return;
+
+    var usernames = d.gifted_usernames || d.giftedUsernames;
+    var qty;
+    if (Array.isArray(usernames)) qty = usernames.length;
+    else if (typeof d.quantity === "number") qty = d.quantity;
+    else qty = 1;
+
+    var gifter = d.gifter_username || d.gifterUsername || "?";
+    var sig = gifter + "|" + qty + "|" + (Array.isArray(usernames) ? usernames.join(",") : "");
+    if (isDuplicate(sig)) return;
+
+    addGifts(qty);
+  }
+
+  // ----------------------------------------------------------------------
+  // Resolve chatroom id -> connect to Pusher
+  // ----------------------------------------------------------------------
+  function resolveChatroomId() {
+    if (CONFIG.chatroomId) return Promise.resolve(CONFIG.chatroomId);
+
+    setStatus("Looking up channel “" + CONFIG.channel + "”…");
+    return fetch("https://kick.com/api/v2/channels/" + encodeURIComponent(CONFIG.channel), {
+      headers: { "Accept": "application/json" }
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (j) {
+        var id = j && j.chatroom && j.chatroom.id;
+        if (!id) throw new Error("no chatroom id in response");
+        return String(id);
+      });
+  }
+
+  var ws = null;
+  var pingTimer = null;
+  var reconnectDelay = 2000;
+
+  function connect(chatroomId) {
+    var channels = [
+      "chatrooms." + chatroomId + ".v2",
+      "chatrooms." + chatroomId
+    ];
+
+    ws = new WebSocket(PUSHER_URL);
+
+    ws.onopen = function () {
+      channels.forEach(function (ch) {
+        ws.send(JSON.stringify({ event: "pusher:subscribe", data: { channel: ch } }));
+      });
+      setStatus("Connected — waiting for gifted subs", "ok");
+      // Hide the "connected" pill after a moment so the overlay is clean.
+      setTimeout(function () { if (ws && ws.readyState === 1) setStatus(null); }, 3500);
+
+      clearInterval(pingTimer);
+      pingTimer = setInterval(function () {
+        if (ws && ws.readyState === 1) {
+          ws.send(JSON.stringify({ event: "pusher:ping", data: {} }));
+        }
+      }, 30000);
+      reconnectDelay = 2000;
+    };
+
+    ws.onmessage = function (msg) {
+      var frame;
+      try { frame = JSON.parse(msg.data); } catch (e) { return; }
+      if (!frame || !frame.event) return;
+
+      if (frame.event === "pusher:ping") {
+        ws.send(JSON.stringify({ event: "pusher:pong", data: {} }));
+        return;
+      }
+      if (frame.event.indexOf("GiftedSubscriptionsEvent") !== -1) {
+        handleGiftPayload(frame.data);
+      }
+    };
+
+    ws.onclose = function () {
+      clearInterval(pingTimer);
+      setStatus("Disconnected — reconnecting…", "err");
+      setTimeout(function () { connect(chatroomId); }, reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+    };
+
+    ws.onerror = function () { try { ws.close(); } catch (e) {} };
+  }
+
+  // ----------------------------------------------------------------------
+  // Demo mode: simulate a gifted sub every few seconds (for testing layout)
+  // ----------------------------------------------------------------------
+  if (CONFIG.demo) {
+    setStatus("DEMO MODE — simulating gifted subs", "ok");
+    setInterval(function () {
+      addGifts(Math.floor(Math.random() * 5) + 1);
+    }, 3000);
+    return;
+  }
+
+  resolveChatroomId()
+    .then(function (id) { connect(id); })
+    .catch(function (err) {
+      setStatus(
+        "Could not find chatroom for “" + CONFIG.channel + "”. " +
+        "Add &chatroom_id=NUMBER to the URL. (" + err.message + ")",
+        "err"
+      );
+    });
+})();
+</script>
+</body>
+</html>
