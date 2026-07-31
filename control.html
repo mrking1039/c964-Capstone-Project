@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kick Daily Sub Counter — Control Panel</title>
+<style>
+  :root { --accent:#53fc18; --bg:#0f1115; --card:#1a1d24; --line:#2a2e38; --text:#f2f4f8; --muted:#9aa3b2; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; min-height:100%; background:var(--bg); color:var(--text);
+    font-family:"Inter","Segoe UI",Roboto,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 22px 18px 60px; }
+  h1 { font-size: 20px; margin: 6px 0 2px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:16px; }
+  .display { text-align:center; padding: 8px 0 4px; }
+  .display .big { font-size: 56px; font-weight: 900; line-height: 1; }
+  .display .big .c { color: var(--accent); }
+  .display .big .g { color: var(--text); }
+  .display .lbl { color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .barouter { height: 10px; background: #2a2e38; border-radius: 999px; margin-top: 14px; overflow: hidden; }
+  .barinner { height: 100%; width: 0%; background: var(--accent); border-radius: 999px; transition: width .35s ease; }
+  .row { display:flex; align-items:center; gap:10px; margin: 12px 0; }
+  .row .name { width: 64px; color: var(--muted); font-weight: 700; font-size: 14px; }
+  button { cursor:pointer; border:1px solid var(--line); background:#232733; color:var(--text);
+    font-weight:800; font-size:16px; border-radius:10px; padding:10px 0; min-width:46px; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color:#062b00; border-color: var(--accent); }
+  button.danger { color:#ff8a8a; }
+  input[type=number] { flex:1; min-width:0; background:#0d0f14; border:1px solid var(--line);
+    color:var(--text); font-size:18px; font-weight:800; text-align:center; border-radius:10px; padding:10px; }
+  input[type=text] { background:#0d0f14; border:1px solid var(--line); color:var(--text);
+    font-size:15px; border-radius:10px; padding:9px 11px; width: 160px; }
+  .stepgrp { display:flex; gap:8px; flex:1; }
+  .stepgrp button { flex: 0 0 46px; }
+  .set { display:flex; gap:8px; flex:1; }
+  .set input { flex:1; }
+  .set button { flex: 0 0 auto; padding: 10px 16px; }
+  .pill { display:inline-block; font-size:12px; font-weight:700; padding:4px 9px; border-radius:999px; }
+  .pill.ok { background:rgba(83,252,24,.15); color:#53fc18; }
+  .pill.warn { background:rgba(255,213,74,.15); color:#ffd54a; }
+  .pill.err { background:rgba(255,90,90,.15); color:#ff5a5a; }
+  .foot { color:var(--muted); font-size:12px; margin-top:6px; line-height:1.5; }
+  a { color: var(--accent); }
+  label.small { color:var(--muted); font-size:12px; font-weight:700; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Daily Sub Counter — Control Panel</h1>
+    <div class="sub">Channel: <strong id="chName">boyking</strong> &nbsp;·&nbsp; <span id="status" class="pill warn">starting…</span></div>
+
+    <div class="card">
+      <div class="display">
+        <div class="lbl">Daily Subs</div>
+        <div class="big"><span class="c" id="dCount">0</span><span> / </span><span class="g" id="dGoal">5</span></div>
+        <div class="barouter"><div class="barinner" id="dBar"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="small">Current count (the “0”)</label>
+      <div class="row">
+        <div class="name">Adjust</div>
+        <div class="stepgrp">
+          <button data-count-add="-1">−1</button>
+          <button data-count-add="1">+1</button>
+          <button data-count-add="5">+5</button>
+          <button class="danger" id="countReset">Reset&nbsp;0</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name">Set to</div>
+        <div class="set">
+          <input type="number" id="countInput" min="0" step="1" placeholder="exact count" />
+          <button class="primary" id="countSet">Set</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="small">Daily goal (the “5”)</label>
+      <div class="row">
+        <div class="name">Adjust</div>
+        <div class="stepgrp">
+          <button data-goal-add="-1">−1</button>
+          <button data-goal-add="1">+1</button>
+          <button data-goal-add="5">+5</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name">Set to</div>
+        <div class="set">
+          <input type="number" id="goalInput" min="0" step="1" placeholder="goal" />
+          <button class="primary" id="goalSet">Set</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="small">Switch channel</label>
+      <div class="row">
+        <input type="text" id="channelInput" placeholder="kick channel slug" />
+        <button id="channelGo">Go</button>
+      </div>
+      <div class="foot" id="modeNote"></div>
+    </div>
+
+    <div class="foot">
+      Live gifted subs are counted automatically by the <strong>overlay</strong> while OBS is
+      running. This panel edits the same shared count &amp; goal in real time.
+    </div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="store.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    var params = new URLSearchParams(location.search);
+    var channel = (params.get("channel") || "boyking").trim().toLowerCase();
+
+    var $ = function (id) { return document.getElementById(id); };
+    $("chName").textContent = channel;
+    $("channelInput").value = channel;
+
+    function setStatus(text, kind) {
+      var el = $("status");
+      el.textContent = text || "";
+      el.className = "pill " + (kind || "warn");
+    }
+
+    function render(state) {
+      $("dCount").textContent = state.count;
+      $("dGoal").textContent = state.goal;
+      var pct = state.goal > 0 ? Math.min(100, (state.count / state.goal) * 100) : 0;
+      $("dBar").style.width = pct + "%";
+      if (document.activeElement !== $("countInput")) $("countInput").placeholder = state.count;
+      if (document.activeElement !== $("goalInput")) $("goalInput").placeholder = state.goal;
+    }
+
+    var store = SubStore.create(channel);
+    store.onStatus(setStatus);
+    store.subscribe(render);
+
+    $("modeNote").innerHTML = store.mode === "firebase"
+      ? "Sync mode: <strong>Firebase</strong> — changes reach your OBS overlay on any device."
+      : "Sync mode: <strong>Local</strong> — this browser only. Fill in <code>firebase-config.js</code> to sync with OBS.";
+
+    // Count controls
+    document.querySelectorAll("[data-count-add]").forEach(function (b) {
+      b.addEventListener("click", function () { store.addCount(parseInt(b.getAttribute("data-count-add"), 10)); });
+    });
+    $("countReset").addEventListener("click", function () { store.setCount(0); });
+    $("countSet").addEventListener("click", function () {
+      var v = parseInt($("countInput").value, 10);
+      if (!isNaN(v)) { store.setCount(v); $("countInput").value = ""; $("countInput").blur(); }
+    });
+
+    // Goal controls
+    document.querySelectorAll("[data-goal-add]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var cur = store.mode ? parseInt($("dGoal").textContent, 10) || 0 : 0;
+        store.setGoal(Math.max(0, cur + parseInt(b.getAttribute("data-goal-add"), 10)));
+      });
+    });
+    $("goalSet").addEventListener("click", function () {
+      var v = parseInt($("goalInput").value, 10);
+      if (!isNaN(v)) { store.setGoal(v); $("goalInput").value = ""; $("goalInput").blur(); }
+    });
+
+    // Enter-to-submit
+    $("countInput").addEventListener("keydown", function (e) { if (e.key === "Enter") $("countSet").click(); });
+    $("goalInput").addEventListener("keydown", function (e) { if (e.key === "Enter") $("goalSet").click(); });
+
+    // Switch channel
+    function goChannel() {
+      var c = $("channelInput").value.trim().toLowerCase();
+      if (c) { params.set("channel", c); location.search = params.toString(); }
+    }
+    $("channelGo").addEventListener("click", goChannel);
+    $("channelInput").addEventListener("keydown", function (e) { if (e.key === "Enter") goChannel(); });
+  })();
+  </script>
+</body>
+</html>
