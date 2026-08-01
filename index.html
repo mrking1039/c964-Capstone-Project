@@ -110,6 +110,8 @@
     }
 
     var lastCount = 0;
+    var wasReached = null;      // null = first render (don't celebrate a stale goal on load)
+    var goalMetTimer = null;
     function render(state) {
       elGoal.textContent = state.goal;
       if (state.count !== lastCount) {
@@ -119,7 +121,19 @@
       } else {
         elCount.textContent = state.count;
       }
-      elGoalMet.style.display = (state.goal > 0 && state.count >= state.goal) ? "block" : "none";
+
+      var reached = state.goal > 0 && state.count >= state.goal;
+      if (wasReached === null) {
+        elGoalMet.style.display = "none";           // baseline on load, no popup
+      } else if (reached && !wasReached) {
+        elGoalMet.style.display = "block";          // just hit the goal -> celebrate
+        clearTimeout(goalMetTimer);
+        goalMetTimer = setTimeout(function () { elGoalMet.style.display = "none"; }, 30000);
+      } else if (!reached) {
+        elGoalMet.style.display = "none";           // dropped back below goal -> clear it
+        clearTimeout(goalMetTimer);
+      }
+      wasReached = reached;
     }
 
     var store = SubStore.create(channel);
