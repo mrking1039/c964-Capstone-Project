@@ -9,7 +9,7 @@
     --accent: #53fc18;
     --text: #ffffff;
     --shadow: rgba(0,0,0,0.85);
-    --num-size: 72px;
+    --num-size: 52px;
     --label-size: 26px;
   }
   html, body {
@@ -25,12 +25,22 @@
     text-align: center; gap: 4px; user-select: none;
   }
   #line {
-    display: flex; align-items: baseline; justify-content: center;
-    gap: 14px; flex-wrap: wrap;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+  @keyframes labelHue {
+    0%   { color: #ff5d5d; }
+    16%  { color: #ffae4d; }
+    33%  { color: #fff24d; }
+    50%  { color: #53fc7a; }
+    66%  { color: #4dd2ff; }
+    83%  { color: #b877ff; }
+    100% { color: #ff5d5d; }
   }
   #label {
-    color: var(--text); font-size: var(--num-size); font-weight: 900;
+    font-size: var(--num-size); font-weight: 900;
     letter-spacing: 1px; text-transform: uppercase; line-height: 1;
+    animation: labelHue 14s linear infinite;
     text-shadow:-3px -3px 0 var(--shadow),3px -3px 0 var(--shadow),-3px 3px 0 var(--shadow),3px 3px 0 var(--shadow),0 4px 8px var(--shadow);
   }
   #score { font-size: var(--num-size); font-weight: 900; line-height: 1;
