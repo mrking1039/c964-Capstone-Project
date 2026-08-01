@@ -64,7 +64,7 @@
           channels.forEach(function (ch) {
             ws.send(JSON.stringify({ event: "pusher:subscribe", data: { channel: ch } }));
           });
-          onStatus("Listening for gifted subs", "ok");
+          onStatus("Connected · listening on chatrooms." + chatroomId, "ok");
           clearInterval(pingTimer);
           pingTimer = setInterval(function () {
             if (ws.readyState === 1) ws.send(JSON.stringify({ event: "pusher:ping", data: {} }));

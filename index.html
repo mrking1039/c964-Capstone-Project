@@ -81,6 +81,7 @@
     var params = new URLSearchParams(location.search);
     var channel = (params.get("channel") || "boyking").trim().toLowerCase();
     var chatroomOverride = (params.get("chatroom_id") || "").trim();
+    var debug = params.get("debug") === "1";
 
     // Styling overrides
     var root = document.documentElement.style;
@@ -106,7 +107,8 @@
       if (!text) { elStatus.className = ""; elStatus.textContent = ""; return; }
       elStatus.textContent = text;
       elStatus.className = "show " + (kind || "");
-      if (kind === "ok") statusTimer = setTimeout(function () { elStatus.className = ""; }, 3500);
+      // In debug mode keep the pill visible; otherwise fade "connected" after a bit.
+      if (kind === "ok" && !debug) statusTimer = setTimeout(function () { elStatus.className = ""; }, 3500);
     }
 
     var lastCount = 0;
@@ -142,8 +144,9 @@
 
     // Only the overlay listens to Kick and writes live increments — this keeps
     // the count from being double-added by the control panel.
-    KickGiftListener.start(channel, chatroomOverride, function (qty) {
+    KickGiftListener.start(channel, chatroomOverride, function (qty, info) {
       store.addCount(qty);
+      if (debug) setStatus("Received +" + qty + " gifted sub(s) from " + (info && info.gifter || "?"), "ok");
     }, setStatus);
   })();
   </script>

@@ -160,7 +160,12 @@ https://mrking1039.github.io/c964-Capstone-Project/?label=Daily%20Subs&color=%23
 - **“Can't find chatroom for …”:** Kick's channel lookup is occasionally blocked
   by Cloudflare. Open `https://kick.com/api/v2/channels/boyking`, find
   `"chatroom": { "id": 123456 }`, and add `&chatroom_id=123456` to the overlay URL.
-- **Number doesn't go up on a real gift:** confirm the channel slug, that OBS
-  (the overlay) is actually running, and that it was a *gifted* sub.
+- **Number doesn't go up on a real gift:** the overlay must look up boyking's
+  numeric chatroom id, and that lookup is often blocked by Cloudflare/CORS inside
+  OBS. Fix it by hardcoding the id: open `https://kick.com/api/v2/channels/boyking`
+  in a normal browser, find `"chatroom": { "id": 123456 }`, and use the overlay
+  URL `…/c964-Capstone-Project/?chatroom_id=123456`. Add `&debug=1` to keep the
+  status pill visible and print each gift as it arrives, so you can confirm the
+  socket is connected.
 - **Bottom-left status pill** on the overlay only appears when something needs
   attention; a healthy overlay shows just the numbers.
