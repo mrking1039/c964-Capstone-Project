@@ -12,10 +12,21 @@
 //  you can still test it. Leave apiKey as "" to stay in local mode.
 // ---------------------------------------------------------------------------
 
-window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",   // e.g. https://your-project-default-rtdb.firebaseio.com
-  projectId: "",
-  appId: ""
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBkf-4KDNA90C5TOfC8TkhdCHu2kQuYcPQ",
+  authDomain: "gifted-subs-daily.firebaseapp.com",
+  databaseURL: "https://gifted-subs-daily-default-rtdb.firebaseio.com",
+  projectId: "gifted-subs-daily",
+  storageBucket: "gifted-subs-daily.firebasestorage.app",
+  messagingSenderId: "548221618265",
+  appId: "1:548221618265:web:8362a7fc06a409b08c4948"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
