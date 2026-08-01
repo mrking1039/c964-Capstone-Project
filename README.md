@@ -128,9 +128,7 @@ Append to the overlay URL as `?name=value` joined with `&`:
 | `channel`   | Kick channel slug (default `boyking`)      | `?channel=boyking`     |
 | `label`     | Text before the numbers (`label=` to hide) | `&label=Daily%20Subs`  |
 | `color`     | Accent / count / bar color                 | `&color=%23ffd54a`     |
-| `size`      | Number font size                           | `&size=90px`           |
-| `labelsize` | Label font size                            | `&labelsize=30px`      |
-| `bar`       | `0` to hide the progress bar               | `&bar=0`               |
+| `size`      | Font size for the label and numbers        | `&size=90px`           |
 | `chatroom_id` | Manual Kick chatroom id (troubleshooting)| `&chatroom_id=123456`  |
 
 Example:

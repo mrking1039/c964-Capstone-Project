@@ -29,9 +29,9 @@
     gap: 14px; flex-wrap: wrap;
   }
   #label {
-    color: var(--text); font-size: var(--label-size); font-weight: 800;
-    letter-spacing: 1px; text-transform: uppercase;
-    text-shadow:-2px -2px 0 var(--shadow),2px -2px 0 var(--shadow),-2px 2px 0 var(--shadow),2px 2px 0 var(--shadow),0 2px 4px var(--shadow);
+    color: var(--text); font-size: var(--num-size); font-weight: 900;
+    letter-spacing: 1px; text-transform: uppercase; line-height: 1;
+    text-shadow:-3px -3px 0 var(--shadow),3px -3px 0 var(--shadow),-3px 3px 0 var(--shadow),3px 3px 0 var(--shadow),0 4px 8px var(--shadow);
   }
   #score { font-size: var(--num-size); font-weight: 900; line-height: 1;
     text-shadow:-3px -3px 0 var(--shadow),3px -3px 0 var(--shadow),-3px 3px 0 var(--shadow),3px 3px 0 var(--shadow),0 4px 8px var(--shadow);
@@ -39,12 +39,6 @@
   #count { color: var(--accent); transition: transform 0.18s ease; display: inline-block; }
   #count.bump { transform: scale(1.3); }
   #sep, #goal { color: var(--text); }
-  #bar {
-    width: min(80vw, 420px); height: 12px; margin-top: 10px;
-    background: rgba(255,255,255,0.18); border-radius: 999px; overflow: hidden;
-    box-shadow: 0 2px 6px var(--shadow);
-  }
-  #barfill { height: 100%; width: 0%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
   #goalMet { color: var(--accent); font-weight: 800; font-size: var(--label-size);
     text-shadow:-2px -2px 0 var(--shadow),2px -2px 0 var(--shadow),-2px 2px 0 var(--shadow),2px 2px 0 var(--shadow); }
   #status {
@@ -62,7 +56,6 @@
       <span id="label">Daily Subs</span>
       <span id="score"><span id="count">0</span><span id="sep"> / </span><span id="goal">5</span></span>
     </div>
-    <div id="bar"><div id="barfill"></div></div>
     <div id="goalMet" style="display:none">🎉 Goal reached!</div>
   </div>
   <div id="status"></div>
@@ -78,25 +71,20 @@
     var params = new URLSearchParams(location.search);
     var channel = (params.get("channel") || "boyking").trim().toLowerCase();
     var chatroomOverride = (params.get("chatroom_id") || "").trim();
-    var showBar = params.get("bar") !== "0";
 
     // Styling overrides
     var root = document.documentElement.style;
     if (params.get("color")) root.setProperty("--accent", params.get("color"));
     if (params.get("size")) root.setProperty("--num-size", params.get("size"));
-    if (params.get("labelsize")) root.setProperty("--label-size", params.get("labelsize"));
 
     var elCount = document.getElementById("count");
     var elGoal = document.getElementById("goal");
     var elLabel = document.getElementById("label");
-    var elBar = document.getElementById("bar");
-    var elBarFill = document.getElementById("barfill");
     var elGoalMet = document.getElementById("goalMet");
     var elStatus = document.getElementById("status");
 
     if (params.get("label") != null) elLabel.textContent = params.get("label");
     if (elLabel.textContent === "") elLabel.style.display = "none";
-    if (!showBar) elBar.style.display = "none";
 
     var statusTimer = null;
     function setStatus(text, kind) {
@@ -117,8 +105,6 @@
       } else {
         elCount.textContent = state.count;
       }
-      var pct = state.goal > 0 ? Math.min(100, (state.count / state.goal) * 100) : 0;
-      elBarFill.style.width = pct + "%";
       elGoalMet.style.display = (state.goal > 0 && state.count >= state.goal) ? "block" : "none";
     }
 
