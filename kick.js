@@ -29,8 +29,9 @@
   }
 
   window.KickGiftListener = {
-    start: function (channel, override, onGift, onStatus) {
+    start: function (channel, override, onGift, onStatus, onEvent) {
       onStatus = onStatus || function () {};
+      onEvent = onEvent || function () {};
       var recent = [];
 
       function isDuplicate(sig) {
@@ -77,6 +78,7 @@
           try { frame = JSON.parse(msg.data); } catch (e) { return; }
           if (!frame || !frame.event) return;
           if (frame.event === "pusher:ping") { ws.send(JSON.stringify({ event: "pusher:pong", data: {} })); return; }
+          try { onEvent(frame.event, frame.data); } catch (e) {}
           if (frame.event.indexOf("GiftedSubscriptionsEvent") !== -1) handle(frame.data);
         };
 
