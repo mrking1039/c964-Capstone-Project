@@ -9,8 +9,8 @@
     --accent: #53fc18;
     --text: #ffffff;
     --shadow: rgba(0,0,0,0.85);
-    --num-size: 22px;
-    --label-size: 22px;
+    --num-size: 36px;
+    --label-size: 36px;
   }
   html, body {
     margin: 0; padding: 0; height: 100%;
@@ -26,7 +26,7 @@
   }
   #line {
     display: flex; flex-direction: row; align-items: baseline; justify-content: center;
-    gap: 16px; flex-wrap: nowrap; white-space: nowrap;
+    gap: 12px; flex-wrap: nowrap; white-space: nowrap;
   }
   @keyframes labelHue {
     0%   { color: #ff5d5d; }
@@ -49,6 +49,10 @@
   #count { color: var(--accent); transition: transform 0.18s ease; display: inline-block; }
   #count.bump { transform: scale(1.3); }
   #sep, #goal { color: var(--text); }
+  #colon {
+    color: var(--text); font-size: var(--num-size); font-weight: 900; line-height: 1;
+    text-shadow:-3px -3px 0 var(--shadow),3px -3px 0 var(--shadow),-3px 3px 0 var(--shadow),3px 3px 0 var(--shadow),0 4px 8px var(--shadow);
+  }
   #goalMet { color: var(--accent); font-weight: 800; font-size: var(--label-size);
     text-shadow:-2px -2px 0 var(--shadow),2px -2px 0 var(--shadow),-2px 2px 0 var(--shadow),2px 2px 0 var(--shadow); }
   #status {
@@ -64,6 +68,7 @@
   <div id="widget">
     <div id="line">
       <span id="label">Daily Subs</span>
+      <span id="colon">:</span>
       <span id="score"><span id="count">0</span><span id="sep"> / </span><span id="goal">5</span></span>
     </div>
     <div id="goalMet" style="display:none">🎉 Goal reached!</div>
@@ -94,7 +99,11 @@
     var elStatus = document.getElementById("status");
 
     if (params.get("label") != null) elLabel.textContent = params.get("label");
-    if (elLabel.textContent === "") elLabel.style.display = "none";
+    if (elLabel.textContent === "") {
+      elLabel.style.display = "none";
+      var elColon = document.getElementById("colon");
+      if (elColon) elColon.style.display = "none";
+    }
 
     var statusTimer = null;
     function setStatus(text, kind) {
