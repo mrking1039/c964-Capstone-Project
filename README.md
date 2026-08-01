@@ -85,8 +85,8 @@ it self-enables Pages and publishes on every push.
    commit, go to the **Actions** tab → **Deploy to GitHub Pages** → **Run
    workflow** on branch `claude/kick-gifted-sub-counter-rtxo2s`.)
 3. After the run goes green (~1 min), your URLs are:
-   - **Overlay:** `https://mrking1039.github.io/c964-capstone-project/`
-   - **Control panel:** `https://mrking1039.github.io/c964-capstone-project/control.html`
+   - **Overlay:** `https://mrking1039.github.io/c964-Capstone-Project/`
+   - **Control panel:** `https://mrking1039.github.io/c964-Capstone-Project/control.html`
 
 Both default to channel `boyking`. Add `?channel=yourname` to use another channel.
 
@@ -95,7 +95,7 @@ Both default to channel `boyking`. Add `?channel=yourname` to use another channe
 ## 3. Add the overlay to OBS
 
 1. **Sources → + → Browser**, name it `Daily Subs`.
-2. **URL:** your overlay link (`…github.io/c964-capstone-project/`).
+2. **URL:** your overlay link (`…github.io/c964-Capstone-Project/`).
 3. **Width** `500`, **Height** `220` (adjust to taste).
 4. Uncheck **“Shutdown source when not visible”** so it keeps counting.
 5. **OK**, then position it on your scene.
@@ -135,7 +135,7 @@ Append to the overlay URL as `?name=value` joined with `&`:
 
 Example:
 ```
-https://mrking1039.github.io/c964-capstone-project/?label=Daily%20Subs&color=%2353fc18&size=90px
+https://mrking1039.github.io/c964-Capstone-Project/?label=Daily%20Subs&color=%2353fc18&size=90px
 ```
 
 ---

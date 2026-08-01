@@ -2,23 +2,18 @@
 //  FIREBASE CONFIG  —  paste your own values here (see README "Firebase setup")
 // ---------------------------------------------------------------------------
 //
-//  1. Create a free Firebase project at https://console.firebase.google.com
-//  2. Build → Realtime Database → Create Database (start in TEST mode, or use
-//     the rules shown in the README).
-//  3. Project settings (gear icon) → "Your apps" → Web app (</>) → register →
-//     copy the `firebaseConfig` object and paste its contents below.
+//  IMPORTANT: keep the "window.FIREBASE_CONFIG = { ... }" wrapper below.
+//  When Firebase shows you a snippet, it uses "const firebaseConfig = {...}"
+//  and an "import ... from 'firebase/app'" line — do NOT paste those here.
+//  Only copy the VALUES (apiKey, databaseURL, etc.) into the object below.
 //
-//  Until you fill this in, the app runs in LOCAL mode (single browser only) so
-//  you can still test it. Leave apiKey as "" to stay in local mode.
+//  Firebase web config is meant to be public; it is safe in the repo as long
+//  as your Realtime Database rules restrict access (see README).
+//
+//  Leave apiKey as "" to run in LOCAL mode (single browser, for testing).
 // ---------------------------------------------------------------------------
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
+window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyBkf-4KDNA90C5TOfC8TkhdCHu2kQuYcPQ",
   authDomain: "gifted-subs-daily.firebaseapp.com",
   databaseURL: "https://gifted-subs-daily-default-rtdb.firebaseio.com",
@@ -27,6 +22,3 @@ const firebaseConfig = {
   messagingSenderId: "548221618265",
   appId: "1:548221618265:web:8362a7fc06a409b08c4948"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
