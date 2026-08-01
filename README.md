@@ -74,12 +74,17 @@ Built for [`boyking`](https://kick.com/boyking) but works for any channel.
 
 ## 2. Publish the pages (get your URLs)
 
-Easiest free option — **GitHub Pages** (this repo is already on GitHub):
+Hosting uses **GitHub Pages**, which needs the repo to be **public** (free plan).
+A GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) does the rest —
+it self-enables Pages and publishes on every push.
 
-1. Repo → **Settings → Pages**.
-2. **Source:** Deploy from a branch → branch `claude/kick-gifted-sub-counter-rtxo2s`
-   (or merge to `main` and pick `main`), folder **`/ (root)`** → **Save**.
-3. After ~1 minute you'll have:
+1. Repo → **Settings → General → Danger Zone → Change repository visibility →
+   Make public** → confirm.
+2. The next push publishes automatically. (Editing `firebase-config.js` in
+   step 1 above is a push, so that alone triggers it. To publish without any new
+   commit, go to the **Actions** tab → **Deploy to GitHub Pages** → **Run
+   workflow** on branch `claude/kick-gifted-sub-counter-rtxo2s`.)
+3. After the run goes green (~1 min), your URLs are:
    - **Overlay:** `https://mrking1039.github.io/c964-capstone-project/`
    - **Control panel:** `https://mrking1039.github.io/c964-capstone-project/control.html`
 

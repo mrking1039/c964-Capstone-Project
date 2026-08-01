@@ -4,14 +4,14 @@ name: Deploy to GitHub Pages
 # to the working branch. The configure-pages step self-enables Pages on the
 # first successful run, so no manual Settings toggle is needed.
 
-# NOTE: GitHub Pages requires a PUBLIC repo (or a paid plan). While this repo is
-# private on a free plan, the deploy will fail, so auto-run on push is disabled.
-# Make the repo public (Settings → General → Danger Zone → Change visibility),
-# then run this workflow once from the Actions tab ("Run workflow") to publish.
+# NOTE: GitHub Pages requires a PUBLIC repo (or a paid plan). Once the repo is
+# public this workflow self-enables Pages and publishes on every push. If it
+# ever needs a manual kick, use the Actions tab → "Run workflow".
 on:
   workflow_dispatch:
   push:
     branches:
+      - claude/kick-gifted-sub-counter-rtxo2s
       - main
 
 permissions:
